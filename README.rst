@@ -11,6 +11,6 @@ Usage
    from aiohttp_negotiate import NegotiateClientSession
 
    session = NegotiateClientSession()
-   resp = yield from session.get('https://example.com/')
+   resp = await session.get('https://example.com/')
 
 

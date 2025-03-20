@@ -27,11 +27,7 @@ class NegotiateMixin(object):
 
     @staticmethod
     def get_hostname(response):
-        assert isinstance(response, aiohttp.ClientResponse)
-        assert isinstance(response.connection, aiohttp.connector.Connection)
-        sock = response.connection._transport.get_extra_info("socket")
-        assert isinstance(sock, (ssl.SSLSocket, socket.socket))
-        return socket.gethostbyaddr(sock.getpeername()[0])[0]
+        return response.url.host
 
     def get_context(self, host):
         service_name = gssapi.Name(

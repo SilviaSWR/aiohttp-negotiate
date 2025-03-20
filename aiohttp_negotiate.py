@@ -1,6 +1,6 @@
 import base64
 import logging
-from http.client import UNAUTHORIZED
+from urllib.parse import urlparse
 
 import aiohttp
 import gssapi
@@ -52,10 +52,8 @@ class NegotiateMixin(object):
 
     async def _request(self, method, url, *, headers=None, **kwargs):
         headers = headers or {}
-        response = await super()._request(method, url, headers=headers, **kwargs)
-        challenges = self.get_challenges(response)
-        if response.status == UNAUTHORIZED and 'negotiate' in challenges:
-            host = response.url.host
+        host = urlparse(url).hostname
+        while True:
             ctx = self.get_context(host)
             out_token = self.negotiate_step(ctx)
             while True:

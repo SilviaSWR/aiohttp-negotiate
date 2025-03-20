@@ -94,8 +94,9 @@ class NegotiateMixin(object):
             if self.mutual_authentication == DISABLED:
                 break
             in_token = challenges.get('negotiate', False)
+            redirect = urlparse(url).hostname != host
             if not in_token:
-                if kwargs["allow_redirects"] or self.mutual_authentication == OPTIONAL:
+                if  redirect or self.mutual_authentication == OPTIONAL:
                     break
                 raise MutualAuthenticationError("Unable to authenticate "
                                                 "{0}".format(response))

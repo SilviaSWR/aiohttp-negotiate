@@ -1,8 +1,7 @@
+import base64
 import logging
 import socket
 import ssl
-
-import base64
 from http.client import UNAUTHORIZED
 
 import aiohttp

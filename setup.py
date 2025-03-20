@@ -10,6 +10,7 @@ setup(
     url='https://github.com/ox-it/aiohttp-negotiate',
     license='BSD',
     py_modules=['aiohttp_negotiate'],
+    python_requires='>=3.5',
     tests_require=['nose'],
     test_suite='nose.collector',
     install_requires=['aiohttp', 'gssapi', 'www-authenticate'],

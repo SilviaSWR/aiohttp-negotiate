@@ -1,9 +1,5 @@
-import asyncio
-import logging
-import socket
-import ssl
-
 import base64
+import logging
 from http.client import UNAUTHORIZED
 
 import aiohttp
@@ -24,12 +20,6 @@ class NegotiateMixin(object):
         self.negotiate_service = negotiate_service
         super().__init__(**kwargs)
 
-    def get_hostname(self, response):
-        assert isinstance(response, aiohttp.ClientResponse)
-        assert isinstance(response.connection, aiohttp.connector.Connection)
-        sock = response.connection._transport.get_extra_info('socket')
-        assert isinstance(sock, (ssl.SSLSocket, socket.socket))
-        return socket.gethostbyaddr(sock.getpeername()[0])[0]
 
     def get_context(self, host):
         service_name = gssapi.Name(self.negotiate_service_name or '{0}@{1}'.format(self.negotiate_service, host),
@@ -65,7 +55,7 @@ class NegotiateMixin(object):
         response = await super()._request(method, url, headers=headers, **kwargs)
         challenges = self.get_challenges(response)
         if response.status == UNAUTHORIZED and 'negotiate' in challenges:
-            host = self.get_hostname(response)
+            host = response.url.host
             ctx = self.get_context(host)
             out_token = self.negotiate_step(ctx)
             while True:

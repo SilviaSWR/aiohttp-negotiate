@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import socket
 import ssl
@@ -60,10 +59,9 @@ class NegotiateMixin(object):
             out_token = base64.b64encode(out_token).decode('utf-8')
         return out_token
 
-    @asyncio.coroutine
-    def _request(self, method, url, *, headers=None, **kwargs):
+    async def _request(self, method, url, *, headers=None, **kwargs):
         headers = headers or {}
-        response = yield from super()._request(method, url, headers=headers, **kwargs)
+        response = await super()._request(method, url, headers=headers, **kwargs)
         challenges = self.get_challenges(response)
         if response.status == UNAUTHORIZED and 'negotiate' in challenges:
             host = self.get_hostname(response)
@@ -73,7 +71,7 @@ class NegotiateMixin(object):
                 response.close()
                 if out_token:
                     headers['Authorization'] = 'Negotiate ' + out_token
-                    response = yield from super()._request(method, url, headers=headers, **kwargs)
+                    response = await super()._request(method, url, headers=headers, **kwargs)
                 challenges = www_authenticate.parse(response.headers.get('WWW-Authenticate'))
                 in_token = challenges['negotiate']
                 self.negotiate_step(ctx, in_token)

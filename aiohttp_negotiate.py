@@ -25,7 +25,7 @@ OPTIONAL = 2
 DISABLED = 3
 
 
-class MutualAuthenticationError(aiohttp.exception.TraceRequestExceptionParams):
+class MutualAuthenticationError(aiohttp.TraceRequestExceptionParams):
     """Mutual Authentication Error"""
 
 

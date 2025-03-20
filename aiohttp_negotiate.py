@@ -34,14 +34,6 @@ class NegotiateMixin(object):
         return gssapi.SecurityContext(name=service_name,
                                       creds=creds)
 
-    def get_challenges(self, response):
-        challenges = {}
-        for k, v in response.headers.items():
-             if k.lower() == 'www-authenticate':
-                 challenges.update(www_authenticate.parse(v))
-        logger.debug('Server challenges: {}'.format(challenges))
-        return challenges
-
     def negotiate_step(self, ctx, in_token=None):
         if in_token:
             in_token = base64.b64decode(in_token)

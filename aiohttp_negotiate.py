@@ -8,16 +8,38 @@ import www_authenticate
 
 logger = logging.getLogger(__name__)
 
+# Different types of mutual authentication:
+#  with mutual_authentication set to REQUIRED, all responses will be
+#   authenticated with the exception of errors. Errors will have their contents
+#   and headers stripped. If a non-error response cannot be authenticated, a
+#   MutualAuthenticationError exception will be raised.
+#   In the case of a response being redirected, it will act as OPTIONAL.
+# with mutual_authentication set to OPTIONAL, mutual authentication will be
+#   attempted if supported, and if supported and failed, a
+#   MutualAuthenticationError exception will be raised. Responses which do not
+#   support mutual authentication will be returned directly to the user.
+# with mutual_authentication set to DISABLED, mutual authentication will not be
+#   attempted, even if supported.
+REQUIRED = 1
+OPTIONAL = 2
+DISABLED = 3
+
+
+class MutualAuthenticationError(aiohttp.exception.TraceRequestExceptionParams):
+    """Mutual Authentication Error"""
+
 
 class NegotiateMixin(object):
     def __init__(self, *,
                  negotiate_client_name=None,
                  negotiate_service_name=None,
                  negotiate_service='HTTP',
+                 mutual_authentication=REQUIRED,
                  **kwargs):
         self.negotiate_client_name = negotiate_client_name
         self.negotiate_service_name = negotiate_service_name
         self.negotiate_service = negotiate_service
+        self.mutual_authentication = mutual_authentication
         super().__init__(**kwargs)
 
 

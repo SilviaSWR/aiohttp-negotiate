@@ -23,7 +23,8 @@ class NegotiateMixin(object):
         self.negotiate_service = negotiate_service
         super().__init__(**kwargs)
 
-    def get_hostname(self, response):
+    @staticmethod
+    def get_hostname(response):
         assert isinstance(response, aiohttp.ClientResponse)
         assert isinstance(response.connection, aiohttp.connector.Connection)
         sock = response.connection._transport.get_extra_info('socket')
@@ -43,7 +44,8 @@ class NegotiateMixin(object):
         return gssapi.SecurityContext(name=service_name,
                                       creds=creds)
 
-    def get_challenges(self, response):
+    @staticmethod
+    def get_challenges(response):
         challenges = {}
         for k, v in response.headers.items():
              if k.lower() == 'www-authenticate':
@@ -51,7 +53,8 @@ class NegotiateMixin(object):
         logger.debug('Server challenges: {}'.format(challenges))
         return challenges
 
-    def negotiate_step(self, ctx, in_token=None):
+    @staticmethod
+    def negotiate_step(ctx, in_token=None):
         if in_token:
             in_token = base64.b64decode(in_token)
         out_token = ctx.step(in_token)

@@ -70,16 +70,31 @@ class NegotiateMixin(object):
         while True:
             ctx = self.get_context(host)
             out_token = self.negotiate_step(ctx)
-            while True:
-                response.close()
-                if out_token:
-                    headers['Authorization'] = 'Negotiate ' + out_token
-                    response = await super()._request(method, url, headers=headers, **kwargs)
-                challenges = www_authenticate.parse(response.headers.get('WWW-Authenticate'))
-                in_token = challenges['negotiate']
-                self.negotiate_step(ctx, in_token)
-                if ctx.complete:
+            if out_token:
+                headers['Authorization'] = 'Negotiate ' + out_token
+            response = await super()._request(method, url, headers=headers, **kwargs)
+            host = response.url.host
+            challenges = www_authenticate.parse(response)
+
+            # The following lines have been adapted in order to be compatible with
+            # a request being transparently redirected, in some cases the next host
+            # will not send a negotiate parameter, so the server cannot be authenticated.
+            # To avoid the exception, that kind of request is being treated as OPTIONAL
+            # authentication.
+            # TODO: manage the request to allow Mutual authentication when
+            #  the requests is being redirected.
+            if self.mutual_authentication == DISABLED:
+                break
+            in_token = challenges.get('negotiate', False)
+            if not in_token:
+                if kwargs["allow_redirects"] or self.mutual_authentication == OPTIONAL:
                     break
+                raise MutualAuthenticationError("Unable to authenticate "
+                                                "{0}".format(response))
+            self.negotiate_step(ctx, in_token)
+            if ctx.complete:
+                break
+            response.close()
         return response
 
 class NegotiateClientSession(NegotiateMixin, aiohttp.ClientSession):

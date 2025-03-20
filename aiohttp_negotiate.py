@@ -56,6 +56,14 @@ class NegotiateMixin(object):
         return gssapi.SecurityContext(name=service_name,
                                       creds=creds)
 
+    def get_challenges(self, response):
+        challenges = {}
+        for k, v in response.headers.items():
+            if k.lower() == 'www-authenticate':
+                challenges.update(www_authenticate.parse(v))
+        logger.debug('Server challenges: {}'.format(challenges))
+        return challenges
+
     def negotiate_step(self, ctx, in_token=None):
         if in_token:
             in_token = base64.b64decode(in_token)
@@ -74,7 +82,7 @@ class NegotiateMixin(object):
                 headers['Authorization'] = 'Negotiate ' + out_token
             response = await super()._request(method, url, headers=headers, **kwargs)
             host = response.url.host
-            challenges = www_authenticate.parse(response)
+            challenges = self.get_challenges(response)
 
             # The following lines have been adapted in order to be compatible with
             # a request being transparently redirected, in some cases the next host

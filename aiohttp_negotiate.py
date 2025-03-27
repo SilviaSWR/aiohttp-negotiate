@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 REQUIRED = 1
 OPTIONAL = 2
 DISABLED = 3
+FIRST_REQUEST = 4
 
 
 class MutualAuthenticationError(aiohttp.TraceRequestExceptionParams):
@@ -30,6 +31,9 @@ class MutualAuthenticationError(aiohttp.TraceRequestExceptionParams):
 
 
 class NegotiateMixin(object):
+
+    authenticate: bool = False
+
     def __init__(self, *,
                  negotiate_client_name=None,
                  negotiate_service_name=None,
@@ -91,7 +95,8 @@ class NegotiateMixin(object):
             # authentication.
             # TODO: manage the request to allow Mutual authentication when
             #  the requests is being redirected.
-            if self.mutual_authentication == DISABLED:
+            if (self.mutual_authentication == DISABLED or
+                    (self.mutual_authentication == FIRST_REQUEST and self.authenticate)):
                 break
             in_token = challenges.get('negotiate', False)
             redirect = urlparse(url).hostname != host
@@ -102,6 +107,7 @@ class NegotiateMixin(object):
                                                 "{0}".format(response))
             self.negotiate_step(ctx, in_token)
             if ctx.complete:
+                self.authenticate = True
                 break
             response.close()
         return response

@@ -13,4 +13,5 @@ Usage
    session = NegotiateClientSession()
    resp = await session.get('https://example.com/')
 
-
+Upgrade to Python>=3.5 contribution has received funding from the Spanish government (grant EQC2021-007479-P,
+funded by MCIN/AEI/10.13039/501100011033), the EU NextGeneration/PRTR (PRTR-C17.I1), and the Generalitat de Catalunya.
